@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.util.*;
 
 public class Matrix {
-    // Vectori pentru direcții: Stanga, Sus, Dreapta, Jos
     private static final int[] dx = new int[]{0, -1, 0, 1};
     private static final int[] dy = new int[]{-1, 0, 1, 0};
     private static final String[] MOVE_NAMES = new String[]{"left", "up", "right", "down"};
 
     private final byte[][] tiles;
-    private final int freeI; // Poziția spațiului liber (0)
+    private final int freeI;
     private final int freeJ;
 
     private final int numberOfSteps;
@@ -28,9 +27,6 @@ public class Matrix {
         this.manhattan = calculateManhattan();
     }
 
-    /**
-     * Citirea matricei inițiale din fișierul input.in
-     */
     public static Matrix readFromFile() throws IOException {
         byte[][] values = new byte[4][4];
         int freeI = -1, freeJ = -1;
@@ -49,15 +45,11 @@ public class Matrix {
         return new Matrix(values, freeI, freeJ, 0, null, "");
     }
 
-    /**
-     * Heuristica Manhattan Distance: suma distanțelor fiecărei piese până la poziția corectă.
-     */
     private int calculateManhattan() {
         int sum = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (tiles[i][j] != 0) {
-                    // Calculăm unde ar trebui să fie piesa (valoarea 1 la index 0,0 etc.)
                     int targetVal = tiles[i][j] - 1;
                     int targetI = targetVal / 4;
                     int targetJ = targetVal % 4;
@@ -68,31 +60,22 @@ public class Matrix {
         return sum;
     }
 
-    /**
-     * Generează stările următoare posibile (mutările vecinilor în spațiul liber).
-     * Evită întoarcerea imediată în starea anterioară pentru a preveni cicluri triviale.
-     */
     public List<Matrix> generateMoves() {
         List<Matrix> moves = new ArrayList<>();
         for (int k = 0; k < 4; k++) {
             int newI = freeI + dx[k];
             int newJ = freeJ + dy[k];
 
-            // Verificăm dacă mutarea este în interiorul tablei
             if (newI >= 0 && newI < 4 && newJ >= 0 && newJ < 4) {
-
-                // Optimizare: Nu ne întoarcem în starea imediat anterioară
                 if (previousState != null && newI == previousState.freeI && newJ == previousState.freeJ) {
                     continue;
                 }
 
-                // Clonăm matricea pentru noua stare
                 byte[][] newTiles = new byte[4][4];
                 for(int i=0; i<4; i++) {
                     newTiles[i] = tiles[i].clone();
                 }
 
-                // Interschimbăm spațiul liber cu piesa
                 newTiles[freeI][freeJ] = newTiles[newI][newJ];
                 newTiles[newI][newJ] = 0;
 
@@ -107,7 +90,6 @@ public class Matrix {
         Matrix current = this;
         List<String> path = new ArrayList<>();
 
-        // Reconstruim drumul de la soluție la rădăcină
         while (current.previousState != null) {
             StringBuilder sb = new StringBuilder();
             sb.append("Move: ").append(current.moveFromPrevious).append("\n");
